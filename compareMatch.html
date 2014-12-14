@@ -1,0 +1,349 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="../../favicon.ico">
+
+    <title>Malaysia Online Sports Statistics</title>
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+
+    <!-- Custom styles for this template -->
+    <link href="/MySportStats/css/main.css" rel="stylesheet">
+    <link href='http://fonts.googleapis.com/css?family=PT+Sans' rel='stylesheet' type='text/css'>
+
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    <script src="/MySportStats/javascripts/ie-emulation-modes-warning.js"></script>
+	
+	<script src="/MySportStats/assets/d3/d3.min.js"></script>
+	<link href="/MySportStats/assets/fa/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+	
+	<style>
+	#mb2 {
+		min-height:450px;
+	}
+	#m1 {
+		color:rgb(31, 119, 180);
+	}
+	#m2 {
+		color:rgb(255, 127, 14);
+	}
+	#m3 {
+		color:rgb(44, 160, 44);
+	}
+	</style>
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+	  
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title" id="myModalLabel">Compare Match</h4>
+      </div>
+      <div id="mb2" class="modal-body">
+		<div id="bodycp" class="col-md-8">
+			<div id="chartcp"></div>
+		</div>
+		<div class="col-md-4">
+			<p class="lead">Legend</p>
+			<p id="m1">SCHOOL FC 0 - 0 ANOTHER FC</p>
+			<p id="m2">ANOTHER FC 3 - 2 SCHOOL FC</p>
+			<p id="m3">SCHOOL FC 2 - 0 ANOTHER FC</p>
+		</div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+      </div>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="/MySportStats/javascripts/ie10-viewport-bug-workaround.js"></script>
+	
+	<script>
+	var RadarChart = {
+	  draw: function(id, d, options){
+	  var cfg = {
+		 radius: 5,
+		 w: 400,
+		 h: 400,
+		 factor: 1,
+		 factorLegend: .85,
+		 levels: 3,
+		 maxValue: 0,
+		 radians: 2 * Math.PI,
+		 opacityArea: 0.5,
+		 ToRight: 5,
+		 TranslateX: 80,
+		 TranslateY: 30,
+		 ExtraWidthX: 100,
+		 ExtraWidthY: 100,
+		 color: d3.scale.category10()
+		};
+	
+		if('undefined' !== typeof options){
+		  for(var i in options){
+			if('undefined' !== typeof options[i]){
+			  cfg[i] = options[i];
+			}
+		  }
+		}
+		cfg.maxValue = Math.max(cfg.maxValue, d3.max(d, function(i){return d3.max(i.map(function(o){return o.value;}))}));
+		var allAxis = (d[0].map(function(i, j){return i.axis}));
+		var total = allAxis.length;
+		var radius = cfg.factor*Math.min(cfg.w/2, cfg.h/2);
+		var Format = d3.format('%');
+		d3.select(id).select("svg").remove();
+	
+		var g = d3.select(id)
+				.append("svg")
+				.attr("width", cfg.w+cfg.ExtraWidthX)
+				.attr("height", cfg.h+cfg.ExtraWidthY)
+				.append("g")
+				.attr("transform", "translate(" + cfg.TranslateX + "," + cfg.TranslateY + ")");
+				;
+
+		var tooltip;
+	
+		//Circular segments
+		for(var j=0; j<cfg.levels-1; j++){
+		  var levelFactor = cfg.factor*radius*((j+1)/cfg.levels);
+		  g.selectAll(".levels")
+		   .data(allAxis)
+		   .enter()
+		   .append("svg:line")
+		   .attr("x1", function(d, i){return levelFactor*(1-cfg.factor*Math.sin(i*cfg.radians/total));})
+		   .attr("y1", function(d, i){return levelFactor*(1-cfg.factor*Math.cos(i*cfg.radians/total));})
+		   .attr("x2", function(d, i){return levelFactor*(1-cfg.factor*Math.sin((i+1)*cfg.radians/total));})
+		   .attr("y2", function(d, i){return levelFactor*(1-cfg.factor*Math.cos((i+1)*cfg.radians/total));})
+		   .attr("class", "line")
+		   .style("stroke", "grey")
+		   .style("stroke-opacity", "0.75")
+		   .style("stroke-width", "0.3px")
+		   .attr("transform", "translate(" + (cfg.w/2-levelFactor) + ", " + (cfg.h/2-levelFactor) + ")");
+		}
+
+		//Text indicating at what % each level is
+		for(var j=0; j<cfg.levels; j++){
+		  var levelFactor = cfg.factor*radius*((j+1)/cfg.levels);
+		  g.selectAll(".levels")
+		   .data([1]) //dummy data
+		   .enter()
+		   .append("svg:text")
+		   .attr("x", function(d){return levelFactor*(1-cfg.factor*Math.sin(0));})
+		   .attr("y", function(d){return levelFactor*(1-cfg.factor*Math.cos(0));})
+		   .attr("class", "legend")
+		   .style("font-family", "sans-serif")
+		   .style("font-size", "10px")
+		   .attr("transform", "translate(" + (cfg.w/2-levelFactor + cfg.ToRight) + ", " + (cfg.h/2-levelFactor) + ")")
+		   .attr("fill", "#737373")
+		   .text(Format((j+1)*cfg.maxValue/cfg.levels));
+		}
+	
+		series = 0;
+
+		var axis = g.selectAll(".axis")
+				.data(allAxis)
+				.enter()
+				.append("g")
+				.attr("class", "axis");
+
+		axis.append("line")
+			.attr("x1", cfg.w/2)
+			.attr("y1", cfg.h/2)
+			.attr("x2", function(d, i){return cfg.w/2*(1-cfg.factor*Math.sin(i*cfg.radians/total));})
+			.attr("y2", function(d, i){return cfg.h/2*(1-cfg.factor*Math.cos(i*cfg.radians/total));})
+			.attr("class", "line")
+			.style("stroke", "grey")
+			.style("stroke-width", "1px");
+
+		axis.append("text")
+			.attr("class", "legend")
+			.text(function(d){return d})
+			.style("font-family", "sans-serif")
+			.style("font-size", "11px")
+			.attr("text-anchor", "middle")
+			.attr("dy", "1.5em")
+			.attr("transform", function(d, i){return "translate(0, -10)"})
+			.attr("x", function(d, i){return cfg.w/2*(1-cfg.factorLegend*Math.sin(i*cfg.radians/total))-60*Math.sin(i*cfg.radians/total);})
+			.attr("y", function(d, i){return cfg.h/2*(1-Math.cos(i*cfg.radians/total))-20*Math.cos(i*cfg.radians/total);});
+
+ 
+		d.forEach(function(y, x){
+		  dataValues = [];
+		  g.selectAll(".nodes")
+			.data(y, function(j, i){
+			  dataValues.push([
+				cfg.w/2*(1-(parseFloat(Math.max(j.value, 0))/cfg.maxValue)*cfg.factor*Math.sin(i*cfg.radians/total)), 
+				cfg.h/2*(1-(parseFloat(Math.max(j.value, 0))/cfg.maxValue)*cfg.factor*Math.cos(i*cfg.radians/total))
+			  ]);
+			});
+		  dataValues.push(dataValues[0]);
+		  g.selectAll(".area")
+						 .data([dataValues])
+						 .enter()
+						 .append("polygon")
+						 .attr("class", "radar-chart-serie"+series)
+						 .style("stroke-width", "2px")
+						 .style("stroke", cfg.color(series))
+						 .attr("points",function(d) {
+							 var str="";
+							 for(var pti=0;pti<d.length;pti++){
+								 str=str+d[pti][0]+","+d[pti][1]+" ";
+							 }
+							 return str;
+						  })
+						 .style("fill", function(j, i){return cfg.color(series)})
+						 .style("fill-opacity", cfg.opacityArea)
+						 .on('mouseover', function (d){
+											z = "polygon."+d3.select(this).attr("class");
+											g.selectAll("polygon")
+											 .transition(200)
+											 .style("fill-opacity", 0.1); 
+											g.selectAll(z)
+											 .transition(200)
+											 .style("fill-opacity", .7);
+										  })
+						 .on('mouseout', function(){
+											g.selectAll("polygon")
+											 .transition(200)
+											 .style("fill-opacity", cfg.opacityArea);
+						 });
+		  series++;
+		});
+		series=0;
+
+
+		d.forEach(function(y, x){
+		  g.selectAll(".nodes")
+			.data(y).enter()
+			.append("svg:circle")
+			.attr("class", "radar-chart-serie"+series)
+			.attr('r', cfg.radius)
+			.attr("alt", function(j){return Math.max(j.value, 0)})
+			.attr("cx", function(j, i){
+			  dataValues.push([
+				cfg.w/2*(1-(parseFloat(Math.max(j.value, 0))/cfg.maxValue)*cfg.factor*Math.sin(i*cfg.radians/total)), 
+				cfg.h/2*(1-(parseFloat(Math.max(j.value, 0))/cfg.maxValue)*cfg.factor*Math.cos(i*cfg.radians/total))
+			]);
+			return cfg.w/2*(1-(Math.max(j.value, 0)/cfg.maxValue)*cfg.factor*Math.sin(i*cfg.radians/total));
+			})
+			.attr("cy", function(j, i){
+			  return cfg.h/2*(1-(Math.max(j.value, 0)/cfg.maxValue)*cfg.factor*Math.cos(i*cfg.radians/total));
+			})
+			.attr("data-id", function(j){return j.axis})
+			.style("fill", cfg.color(series)).style("fill-opacity", .9)
+			.on('mouseover', function (d){
+						newX =  parseFloat(d3.select(this).attr('cx')) - 10;
+						newY =  parseFloat(d3.select(this).attr('cy')) - 5;
+					
+						tooltip
+							.attr('x', newX)
+							.attr('y', newY)
+							.text(Format(d.value))
+							.transition(200)
+							.style('opacity', 1);
+						
+						z = "polygon."+d3.select(this).attr("class");
+						g.selectAll("polygon")
+							.transition(200)
+							.style("fill-opacity", 0.1); 
+						g.selectAll(z)
+							.transition(200)
+							.style("fill-opacity", .7);
+					  })
+			.on('mouseout', function(){
+						tooltip
+							.transition(200)
+							.style('opacity', 0);
+						g.selectAll("polygon")
+							.transition(200)
+							.style("fill-opacity", cfg.opacityArea);
+					  })
+			.append("svg:title")
+			.text(function(j){return Math.max(j.value, 0)});
+
+		  series++;
+		});
+		//Tooltip
+		tooltip = g.append('text')
+				   .style('opacity', 0)
+				   .style('font-family', 'sans-serif')
+				   .style('font-size', '13px');
+	  }
+	};
+	</script>
+	
+	<script>
+	var w = 300,
+		h = 300;
+
+	var colorscale = d3.scale.category10();
+
+
+	//Data
+	var d = [
+			  [
+				{axis:"Overall",value:0.76},
+				{axis:"Posession",value:0.40},
+				{axis:"Passing",value:0.48},
+				{axis:"Fouls",value:0.20},
+				{axis:"Shoots",value:0.20}
+			  ],
+			  [
+				{axis:"Overall",value:0.46},
+				{axis:"Posession",value:0.30},
+				{axis:"Passing",value:0.68},
+				{axis:"Fouls",value:0.40},
+				{axis:"Shoots",value:0.42}
+			  ],
+			  [
+				{axis:"Overall",value:0.83},
+				{axis:"Posession",value:0.60},
+				{axis:"Passing",value:0.88},
+				{axis:"Fouls",value:0.10},
+				  {axis:"Shoots",value:0.42}
+			  ]
+			];
+
+	//Options for the Radar chart, other than default
+	var mycfg = {
+	  w: w,
+	  h: h,
+	  maxValue: 1.0,
+	  levels: 10,
+	  ExtraWidthX: 300
+	}
+
+	//Call function to draw the Radar chart
+	//Will expect that data is in %'s
+	RadarChart.draw("#chartcp", d, mycfg);
+
+	////////////////////////////////////////////
+	/////////// Initiate legend ////////////////
+	////////////////////////////////////////////
+	
+	
+
+	
+	</script>
+
+
+  </body>
+</html>

@@ -1,0 +1,86 @@
+/* line 1, ../sass/main.scss */
+.spacer {
+  margin-top: 80px;
+}
+
+/* line 5, ../sass/main.scss */
+.navbtn {
+  margin: 8px;
+}
+
+/* line 9, ../sass/main.scss */
+.context {
+  background-color: #f4f4f4;
+  width: 100%;
+  padding: 15px;
+}
+
+/* line 15, ../sass/main.scss */
+.row-xs-flex {
+  display: flex;
+  -webkit-display: flex;
+}
+
+@media (min-width: 768px) {
+  /* line 20, ../sass/main.scss */
+  .row-sm-flex {
+    display: flex;
+    -webkit-display: flex;
+  }
+}
+@media (min-width: 992px) {
+  /* line 26, ../sass/main.scss */
+  .row-md-flex {
+    display: flex;
+    -webkit-display: flex;
+  }
+}
+@media (min-width: 1200px) {
+  /* line 32, ../sass/main.scss */
+  .row-lg-flex {
+    display: flex;
+    -webkit-display: flex;
+  }
+}
+/* line 37, ../sass/main.scss */
+.col-xs-flex {
+  display: flex;
+  -webkit-display: flex;
+}
+
+@media (min-width: 768px) {
+  /* line 42, ../sass/main.scss */
+  .col-sm-flex {
+    display: flex;
+    -webkit-display: flex;
+  }
+}
+@media (min-width: 992px) {
+  /* line 48, ../sass/main.scss */
+  .col-md-flex {
+    display: flex;
+    -webkit-display: flex;
+  }
+}
+@media (min-width: 992px) {
+  /* line 54, ../sass/main.scss */
+  .col-md-flex {
+    display: flex;
+    -webkit-display: flex;
+  }
+}
+/* line 60, ../sass/main.scss */
+h2 {
+  font-family: 'PT Sans', sans-serif;
+  color: #1f2d4c;
+}
+
+/* line 65, ../sass/main.scss */
+#noPadding {
+  padding: 0px;
+}
+
+/* line 69, ../sass/main.scss */
+.row2 {
+  margin-bottom: 10px;
+}
